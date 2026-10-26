@@ -18,11 +18,11 @@
 <style>
 /* ... 所有原有的 CSS 保持完全不变 ... */
 :root {
---bg: #f0f0f0; --card: #ffffff; --text: #000000; --sub: #666666;
---line: #000000; --accent: #0000ff; --tab-bg: #e0e0e0; --tab-active: #ffffff;
---font: "Courier New", Courier, monospace;
---radius: 0px; --line-w: 2px; --shadow: 4px 4px 0 #000;
---noise: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAACVJREFUGFdjZGBg+M/AwMDIwMDAwMDAwMDAwMDAwMDAwMDAwMAAAA4AAf8B1kIAAAAASUVORK5CYII=');
+  --bg: #f0f0f0; --card: #ffffff; --text: #000000; --sub: #666666;
+  --line: #000000; --accent: #0000ff; --tab-bg: #e0e0e0; --tab-active: #ffffff;
+  --font: "Courier New", Courier, monospace;
+  --radius: 0px; --line-w: 2px; --shadow: 4px 4px 0 #000;
+  --noise: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAACVJREFUGFdjZGBg+M/AwMDIwMDAwMDAwMDAwMDAwMDAwMDAwMAAAA4AAf8B1kIAAAAASUVORK5CYII=');
 }
 body.theme-mono { --bg: #d0d0d0; --card: #ffffff; --text: #000000; --sub: #333333; --line: #000000; --accent: #000000; --tab-bg: #b0b0b0; --tab-active: #ffffff; --shadow: 3px 3px 0 #555; }
 body.theme-yellow { --bg: #f4efd7; --card: #f9f7eb; --text: #3a3125; --sub: #7a6e5d; --line: #3a3125; --accent: #c58b00; --tab-bg: #e6dfc4; --tab-active: #f9f7eb; --shadow: 3px 3px 0 #3a3125; }
@@ -43,7 +43,7 @@ body.theme-neon .attr-fill { background: var(--accent); box-shadow: 0 0 8px var(
 body.theme-neon .ck-box { border-color: var(--accent); border-radius: 50%; }
 body.theme-neon .ck-box.done { background: var(--accent); box-shadow: 0 0 10px var(--accent); }
 
-• { box-sizing: border-box; -webkit-touch-callout: none; }
+* { box-sizing: border-box; -webkit-touch-callout: none; }
 body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.5; transition: background .2s; -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
 body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: -1; background-image: var(--noise); opacity: 0.1; }
 /* 🌟 核心2：适配底部手势条安全区 */
@@ -183,54 +183,980 @@ canvas { max-height: 200px; }
 <body>
 
 <div class="wrap">
-<div class="header">
-<div class="top-btns">
-<button class="btn" onclick="openModal('modalSetting')" title="设置" style="padding:4px 8px;">⚙</button>
-</div>
-<h1 class="main-title" id="appTitle">反派的自我修养</h1>
-<div class="date-time-row">
-<span class="sub-date" id="dateDisplay" onclick="showAlmanac()">加载日期中...</span>
-<span class="time-display" id="timeDisplay">子时</span>
-</div>
+  <div class="header">
+    <div class="top-btns">
+      <button class="btn" onclick="openModal('modalSetting')" title="设置" style="padding:4px 8px;">⚙</button>
+    </div>
+    <h1 class="main-title" id="appTitle">反派的自我修养</h1>
+    <div class="date-time-row">
+      <span class="sub-date" id="dateDisplay" onclick="showAlmanac()">加载日期中...</span>
+      <span class="time-display" id="timeDisplay">子时</span>
+    </div>
+  </div>
+
+  <div class="book-tabs-container">
+    <button class="book-tab on" onclick="switchTab('hero')" id="tab-hero">人物</button>
+    <button class="book-tab" onclick="switchTab('daily')" id="tab-daily">日常</button>
+    <button class="book-tab" onclick="switchTab('weekly')" id="tab-weekly">周常</button>
+    <button class="book-tab" onclick="switchTab('temp')" id="tab-temp">临时</button>
+  </div>
+  
+  <div class="book-content">
+    <div class="tab-page on" id="page-hero">
+      <div class="hero-top">
+        <div class="avatar-box" id="heroAvatar" onclick="openModal('modalFace')">🧑‍🚀</div>
+        <div style="flex:1">
+          <div style="font-size:1.5em;font-weight:bold" id="heroName">反派</div>
+          <div style="font-size:1em;color:var(--sub)" id="heroLevel">Lv.1 · 初出茅庐</div>
+          <div class="exp-bar"><div class="exp-fill" id="expFill" style="width:0%"></div></div>
+        </div>
+        <div class="streak-box" onclick="showStats()">
+          <div class="num" id="streakNum">0</div>
+          <div class="txt">打卡天数</div>
+        </div>
+      </div>
+
+      <div class="attr-section">
+        <div style="font-weight:bold; font-size:1.1em; margin-bottom:16px; text-transform:uppercase;">我的属性</div>
+        <div id="attrsContainer"></div>
+      </div>
+
+      <div class="pet-section">
+        <div style="font-weight:bold; margin-bottom:12px; display:flex; justify-content:space-between; text-transform:uppercase;">
+          <span>我的宠物</span>
+          <button class="btn" style="padding:2px 8px; font-size:.8em" onclick="openModal('modalPet')">更换</button>
+        </div>
+        <div style="text-align:left;">
+          <div class="pet-bubble" id="petBubble">今天也要努力哦！</div>
+        </div>
+        <div class="pet-card">
+          <div class="pet-svg-container" id="petIconBox"></div>
+          <div class="pet-status">
+            <div class="pet-stat-row"><span>HP</span><div class="pet-bar-bg"><div class="pet-bar-fill hp" id="petHpBar"></div></div></div>
+            <div class="pet-stat-row"><span>MP</span><div class="pet-bar-bg"><div class="pet-bar-fill mood" id="petMoodBar"></div></div></div>
+            <div class="pet-actions">
+              <button class="pet-btn" onclick="petAction('feed')">喂养</button>
+              <button class="pet-btn" onclick="petAction('clean')">铲屎</button>
+              <button class="pet-btn" onclick="petAction('wash')">清洁</button>
+              <button class="pet-btn" onclick="petAction('play')">玩耍</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ach-section">
+        <div class="ach-header" onclick="toggleAch()">
+          <span>成就勋章 (50)</span>
+          <span id="achToggleIcon">▼ 展开</span>
+        </div>
+        <div class="ach-list" id="achList"></div>
+      </div>
+    </div>
+
+    <div class="tab-page" id="page-daily">
+      <div class="progress-banner" id="dailyProgress"></div>
+      <div id="dailyList"></div>
+      <div style="margin-top:16px; display:flex; gap:8px;">
+        <input type="text" id="dailyInput" placeholder="ADD DAILY TASK..." style="flex:1; padding:10px; border:var(--line-w) solid var(--line); background:var(--bg); color:var(--text); font-family:inherit;">
+        <button class="btn primary" onclick="addTask('daily')">+</button>
+      </div>
+    </div>
+
+    <div class="tab-page" id="page-weekly">
+      <div class="progress-banner" id="weeklyProgress"></div>
+      <div id="weeklyList"></div>
+      <div style="margin-top:16px; display:flex; gap:8px;">
+        <input type="text" id="weeklyInput" placeholder="ADD WEEKLY TASK..." style="flex:1; padding:10px; border:var(--line-w) solid var(--line); background:var(--bg); color:var(--text); font-family:inherit;">
+        <button class="btn primary" onclick="addTask('weekly')">+</button>
+      </div>
+    </div>
+
+    <div class="tab-page" id="page-temp">
+      <div style="font-weight:bold;margin-bottom:10px" id="tempDateLabel">今天</div>
+      <div id="tempList"></div>
+      <button class="btn" style="width:100%; margin-top:16px" onclick="openModal('modalTempAdd')">+ 添加临时任务</button>
+      <div style="margin-top:20px; border-top:var(--line-w) solid var(--line); padding-top:16px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+          <button class="btn" onclick="changeMonth(-1)">‹</button>
+          <span id="monthLabel" style="font-weight:bold"></span>
+          <button class="btn" onclick="changeMonth(1)">›</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;" id="calGrid"></div>
+      </div>
+    </div>
+
+    <div class="tab-page" id="page-adv">
+      <div id="advBlocks" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;"></div>
+      <div style="margin-top:16px; display:flex; gap:8px;">
+        <input type="text" id="newAdvProject" placeholder="NEW PROJECT..." style="flex:1; padding:10px; border:var(--line-w) solid var(--line); background:var(--bg); color:var(--text); font-family:inherit;">
+        <button class="btn primary" onclick="addAdvProject()">+</button>
+      </div>
+      <div class="chart-container">
+        <div style="font-weight:bold; margin-bottom:10px;">TIME ALLOCATION</div>
+        <canvas id="pieChart"></canvas>
+      </div>
+    </div>
+
+    <div class="tab-page" id="page-study">
+      <div style="display:flex; gap:8px; margin-bottom:16px;">
+        <button class="btn primary" style="flex:1" onclick="switchStudy('library', this)">书架</button>
+        <button class="btn" style="flex:1" onclick="switchStudy('account', this)">账目</button>
+        <button class="btn" style="flex:1" onclick="switchStudy('note', this)">便签</button>
+      </div>
+
+      <div id="study-library">
+        <div class="shelf-tabs">
+          <div class="shelf-tab on" onclick="filterShelf('all', this)">全部</div>
+          <div class="shelf-tab" onclick="filterShelf('book', this)">书籍</div>
+          <div class="shelf-tab" onclick="filterShelf('movie', this)">电影</div>
+          <div class="shelf-tab" onclick="filterShelf('tv', this)">电视剧</div>
+          <div class="shelf-tab" onclick="filterShelf('doc', this)">纪录片</div>
+          <div class="shelf-tab" onclick="filterShelf('anime', this)">动漫</div>
+        </div>
+        <div class="shelf-grid" id="shelfGrid"></div>
+        <button class="btn" style="width:100%;margin-top:16px" onclick="openModal('modalLibrary')">+ 录入项目</button>
+      </div>
+
+      <div id="study-account" style="display:none;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:12px;font-weight:bold;">
+          <span>总资产: <span id="totalMoney">0</span> 金币</span>
+          <button class="btn" onclick="openModal('modalAcc')">+ 记一笔</button>
+        </div>
+        <div id="accList"></div>
+        <div class="chart-container">
+          <div style="font-weight:bold; margin-bottom:10px;">EXPENSE ANALYSIS</div>
+          <select id="chartAccType" onchange="renderAccountChart()" style="padding:6px;border:var(--line-w) solid var(--line);background:var(--bg);color:var(--text);margin-bottom:10px; width:100%;">
+            <option value="day">今日花销</option>
+            <option value="month">本月花销</option>
+            <option value="all">总花销</option>
+          </select>
+          <canvas id="accChart"></canvas>
+        </div>
+      </div>
+
+      <div id="study-note" style="display:none;">
+        <div class="folder-wrapper">
+          <div class="folder-bar" id="folderBar"></div>
+          <button class="layout-toggle" onclick="toggleNoteLayout()" title="切换视图">🔄</button>
+        </div>
+        <button class="btn primary" style="width:100%; margin-bottom:16px;" onclick="openNoteEditor()">+ 写便签</button>
+        <div id="noteList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dock">
+    <div class="dock-side" id="micBtn" onclick="toggleVoice()">
+      <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+    </div>
+    <div class="dock-center" id="advBtn" onclick="goTab('adv')">开始冒险</div>
+    <div class="dock-side" id="studyBtn" onclick="goTab('study')">
+      <svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
+    </div>
+  </div>
 </div>
 
-<div class="book-tabs-container">
-<button class="book-tab on" onclick="switchTab('hero')" id="tab-hero">人物</button>
-<button class="book-tab" onclick="switchTab('daily')" id="tab-daily">日常</button>
-<button class="book-tab" onclick="switchTab('weekly')" id="tab-weekly">周常</button>
-<button class="book-tab" onclick="switchTab('temp')" id="tab-temp">临时</button>
+<!-- 全屏便签编辑器 -->
+<div class="note-editor" id="noteEditor">
+  <div class="note-editor-header">
+    <select id="editorFolderSelect"></select>
+    <div>
+      <span class="save-status" id="saveStatus">已自动保存</span>
+      <button class="btn primary" onclick="closeNoteEditor()">完成</button>
+    </div>
+  </div>
+  <textarea class="note-editor-textarea" id="editorText" placeholder="在此输入内容，支持自动保存..."></textarea>
 </div>
 
-<div class="book-content">
-<div class="tab-page on" id="page-hero">
-<div class="hero-top">
-<div class="avatar-box" id="heroAvatar" onclick="openModal('modalFace')">🧑‍🚀</div>
-<div style="flex:1">
-<div style="font-size:1.5em;font-weight:bold" id="heroName">反派</div>
-<div style="font-size:1em;color:var(--sub)" id="heroLevel">Lv.1 · 初出茅庐</div>
-<div class="exp-bar"><div class="exp-fill" id="expFill" style="width:0%"></div></div>
-</div>
-<div class="streak-box" onclick="showStats()">
-<div class="num" id="streakNum">0</div>
-<div class="txt">打卡天数</div>
-</div>
-</div>
-
-<div class="attr-section">
-<div style="font-weight:bold; font-size:1.1em; margin-bottom:16px; text-transform:uppercase;">我的属性</div>
-<div id="attrsContainer"></div>
+<!-- 弹窗组 -->
+<div class="modal" id="modalStats">
+  <div class="modal-box">
+    <h3 class="modal-title">打卡统计</h3>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-val" id="statCurrent">0</div><div class="stat-lbl">当前连续</div></div>
+      <div class="stat-card"><div class="stat-val" id="statMax">0</div><div class="stat-lbl">最长连续</div></div>
+      <div class="stat-card"><div class="stat-val" id="statTotal">0</div><div class="stat-lbl">累计天数</div></div>
+      <div class="stat-card"><div class="stat-val" id="statBreaks">0</div><div class="stat-lbl">中断次数</div></div>
+    </div>
+    <button class="btn" style="width:100%; margin-top:20px;" onclick="closeModal('modalStats')">关闭</button>
+  </div>
 </div>
 
-<div class="pet-section">
-<div style="font-weight:bold; margin-bottom:12px; display:flex; justify-content:space-between; text-transform:uppercase;">
-<span>我的宠物</span>
-<button class="btn" style="padding:2px 8px; font-size:.8em" onclick="openModal('modalPet')">更换</button>
+<div class="modal" id="modalSetting">
+  <div class="modal-box">
+    <h3 class="modal-title">SETTINGS</h3>
+    <div class="field">应用名称 <input type="text" id="inputAppName" onchange="changeAppName(this.value)"></div>
+    <div class="field">主题风格
+      <select id="selTheme" onchange="changeTheme(this.value)">
+        <option value="default">复古黑白</option>
+        <option value="mono">复古噪点</option>
+        <option value="yellow">复古黄黑</option>
+        <option value="brown">复古棕黄</option>
+        <option value="blue">复古像素蓝</option>
+        <option value="minimal">极简白 (可调色)</option>
+        <option value="dark">极简暗黑</option>
+        <option value="neon">🌟 霓虹赛博</option>
+      </select>
+    </div>
+    <div class="field">强调色 <input type="color" id="inputAccent" onchange="changeAccent(this.value)" style="height:30px; padding:0;"></div>
+    
+    <!-- 🌟 核心3：自定义桌面图标 -->
+    <div style="border-top:var(--line-w) dashed var(--line); margin-top:16px; padding-top:16px;">
+      <button class="btn" style="width:100%;margin-bottom:8px" onclick="document.getElementById('iconUpload').click()">修改桌面图标</button>
+      <input type="file" id="iconUpload" accept="image/*" hidden onchange="uploadIcon(event)">
+      <div style="font-size:0.8em;color:var(--sub);margin-bottom:12px;text-align:center">上传后需移除旧图标，重新添加到桌面生效</div>
+      
+      <button class="btn" style="width:100%;margin-bottom:8px" onclick="exportData()">导出数据备份</button>
+      <button class="btn" style="width:100%;margin-bottom:8px" onclick="document.getElementById('importFile').click()">导入数据恢复</button>
+      <input type="file" id="importFile" accept=".json" hidden onchange="importData(event)">
+      <button class="btn" style="width:100%; color:#c0392b; border-color:#c0392b;" onclick="clearData()">清空数据</button>
+    </div>
+    <button class="btn" style="width:100%; margin-top:16px;" onclick="closeModal('modalSetting')">关闭</button>
+  </div>
 </div>
-<div style="text-align:left;">
-<div class="pet-bubble" id="petBubble">今天也要努力哦！</div>
+
+<div class="modal" id="modalFace">
+  <div class="modal-box">
+    <h3 class="modal-title">角色设定</h3>
+    <div class="field">名字 <input type="text" id="inputName"></div>
+    <div class="field">选择初始表情：
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:8px;">
+        <button class="btn" onclick="setAvatar('🧑‍🚀')">🧑‍🚀</button>
+        <button class="btn" onclick="setAvatar('🧝‍♀️')">🧝‍♀️</button>
+        <button class="btn" onclick="setAvatar('🧙‍♂️')">🧙‍♂️</button>
+        <button class="btn" onclick="setAvatar('🐉')">🐉</button>
+      </div>
+    </div>
+    <button class="btn primary" style="width:100%; margin-top:12px" onclick="document.getElementById('avatarFile').click()">📁 上传本地图片</button>
+    <input type="file" id="avatarFile" accept="image/*" hidden onchange="uploadAvatar(event)">
+    <button class="btn primary" style="width:100%;margin-top:16px" onclick="saveFace()">保存</button>
+  </div>
 </div>
-<div class="pet-card">
-<div class="pet-svg-container" id="petIconBox"></div>
-<div class="pet-status">
-<div class="pet-stat-row"><span>HP</span><div class="pet-bar-bg"><div class="pet-bar-fill hp" id="petHpBar"></div></div></div>
-<div class="pet-stat-row"><span>MP</span><div class="pet-bar-bg"><div class="pet-bar-f
+
+<div class="modal" id="modalPet">
+  <div class="modal-box">
+    <h3 class="modal-title">选择宠物</h3>
+    <div class="pet-options" id="petOptions"></div>
+    <button class="btn" style="width:100%; margin-top:16px;" onclick="closeModal('modalPet')">关闭</button>
+  </div>
+</div>
+
+<div class="modal" id="modalLibrary">
+  <div class="modal-box">
+    <h3 class="modal-title">录入新项目</h3>
+    <div class="field">分类
+      <select id="libType">
+        <option value="book">书籍</option><option value="movie">电影</option><option value="tv">电视剧</option><option value="doc">纪录片</option><option value="anime">动漫</option>
+      </select>
+    </div>
+    <div class="field">名称 <input type="text" id="libName"></div>
+    <div class="field">封面图 (可填URL或本地)
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="libCover" placeholder="图片URL" style="flex:1;">
+        <button class="btn" onclick="document.getElementById('libFile').click()">📁</button>
+        <input type="file" id="libFile" accept="image/*" hidden onchange="uploadLibCover(event)">
+      </div>
+    </div>
+    <div class="field">进度描述
+      <div style="display:flex; align-items:center; gap:4px; margin-top:4px;">
+        <input type="number" id="libCur" placeholder="当前" style="flex:1;">
+        <span>/</span>
+        <input type="number" id="libTotal" placeholder="总量" style="flex:1;">
+      </div>
+    </div>
+    <div class="field">观后感 / 备注 <textarea id="libReview" rows="3"></textarea></div>
+    <button class="btn primary" style="width:100%; margin-top:16px" onclick="saveLibrary()">保存</button>
+  </div>
+</div>
+
+<div class="modal" id="modalTempAdd">
+  <div class="modal-box">
+    <h3 class="modal-title">添加临时任务</h3>
+    <div class="field">任务名 <input type="text" id="tempName"></div>
+    <div class="field">时间 <input type="time" id="tempTime"></div>
+    <div class="field">地点 <input type="text" id="tempLoc"></div>
+    <button class="btn primary" style="width:100%; margin-top:16px" onclick="saveTempTask()">保存</button>
+    <button class="btn" style="width:100%; margin-top:8px" onclick="closeModal('modalTempAdd')">取消</button>
+  </div>
+</div>
+
+<div class="modal" id="modalTimer">
+  <div class="modal-box" style="text-align:center">
+    <h3 class="modal-title" id="timerTitle">PROJECT</h3>
+    <div style="font-size:3em;font-weight:bold;margin:20px 0" id="timerDisplay">00:00</div>
+    <div style="display:flex; gap:8px; justify-content:center;">
+      <button class="btn primary" id="btnTimerStart" onclick="startTimer()">开始</button>
+      <button class="btn" id="btnTimerStop" onclick="stopTimer()" style="display:none">结束</button>
+      <button class="btn" onclick="closeModal('modalTimer')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalAcc">
+  <div class="modal-box">
+    <h3 class="modal-title">记一笔</h3>
+    <div class="field">类型 <select id="accType"><option value="income">收入</option><option value="expense">支出</option></select></div>
+    <div class="field">金额 <input type="number" id="accAmount"></div>
+    <div class="field">分类/备注 <input type="text" id="accDesc"></div>
+    <button class="btn primary" style="width:100%;margin-top:16px" onclick="saveAcc()">保存</button>
+  </div>
+</div>
+
+<div class="modal" id="modalAlmanac">
+  <div class="modal-box" style="text-align:center">
+    <h3 class="modal-title" id="almDate">ALMANAC</h3>
+    <div style="font-size:1.2em; margin:20px 0; line-height:1.8;">
+      <div style="color:#c0392b; font-weight:bold;">宜：沐浴 扫舍 捕捉 结网</div>
+      <div style="color:#27ae60; font-weight:bold; margin-top:10px;">忌：嫁娶 入宅 开市 出行</div>
+    </div>
+    <button class="btn" style="width:100%" onclick="closeModal('modalAlmanac')">关闭</button>
+  </div>
+</div>
+
+<script>
+const KEY = 'villain-retro-v11';
+const ATTRS = { str: '力量', wis: '智慧', hp: '体魄', stone: '金币' };
+
+if (navigator.storage && navigator.storage.persist) {
+  navigator.storage.persist().then(granted => {});
+}
+
+// 默认图标
+const DEFAULT_ICON = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+
+const DEFAULT = {
+  appName: '反派的自我修养',
+  hero: { name: '反派', avatar: '🧑‍🚀' },
+  pet: { type: 'cat', hp: 100, mood: 100, lastCare: new Date().toISOString().slice(0,10) },
+  attrExp: { str: 0, wis: 0, hp: 0, stone: 0 },
+  checkInDates: [],
+  tasks: {
+    daily: [
+      { id: 'd1', name: '早起 (固定时间)', exp: 15, attr: 'wis', lastDone: '' },
+      { id: 'd2', name: '喝一杯温水', exp: 5, attr: 'hp', lastDone: '' },
+      { id: 'd3', name: '吃营养早餐', exp: 10, attr: 'hp', lastDone: '' },
+      { id: 'd4', name: '晨间拉伸/运动15min', exp: 15, attr: 'str', lastDone: '' },
+      { id: 'd5', name: '阅读20分钟', exp: 15, attr: 'wis', lastDone: '' },
+      { id: 'd6', name: '专注工作/学习 (番茄钟)', exp: 20, attr: 'wis', lastDone: '' },
+      { id: 'd7', name: '饭后散步10分钟', exp: 10, attr: 'hp', lastDone: '' },
+      { id: 'd8', name: '每日记账', exp: 10, attr: 'stone', lastDone: '' },
+      { id: 'd9', name: '睡前远离屏幕', exp: 10, attr: 'hp', lastDone: '' },
+      { id: 'd10', name: '23:00前入睡', exp: 15, attr: 'hp', lastDone: '' }
+    ],
+    weekly: [
+      { id: 'w1', name: '深度复盘 (周总结)', exp: 30, attr: 'wis', lastDone: '' },
+      { id: 'w2', name: '大扫除/整理房间', exp: 30, attr: 'str', lastDone: '' },
+      { id: 'w3', name: '更换床单被套', exp: 20, attr: 'hp', lastDone: '' },
+      { id: 'w4', name: '联系家人/老友', exp: 20, attr: 'wis', lastDone: '' },
+      { id: 'w5', name: '清点财务/预算', exp: 25, attr: 'stone', lastDone: '' },
+      { id: 'w6', name: '看一部高质量电影/纪录片', exp: 25, attr: 'wis', lastDone: '' }
+    ],
+    temp: []
+  },
+  adv: { projects: [{ id: 'p1', name: '专注学习' }], active: null, history: [] },
+  study: {
+    library: [],
+    account: [],
+    notes: { folders: [{id: 'f1', name: '默认文件夹'}], items: [] }
+  },
+  theme: 'default',
+  accent: '#0000ff',
+  currentShelfFilter: 'all',
+  noteLayout: 'horizontal',
+  customIcon: ''
+};
+
+let raw = localStorage.getItem(KEY);
+let state;
+if (raw) {
+  state = JSON.parse(raw);
+  if(!state.appName) state.appName = '反派的自我修养';
+  if(!state.study.library) state.study.library = [];
+  if(!state.study.notes) state.study.notes = { folders: [{id: 'f1', name: '默认文件夹'}], items: [] };
+  if(!state.currentShelfFilter) state.currentShelfFilter = 'all';
+  if(!state.noteLayout) state.noteLayout = 'horizontal';
+  if(!state.tasks.daily || state.tasks.daily.length === 0) state.tasks.daily = DEFAULT.tasks.daily;
+  if(!state.tasks.weekly || state.tasks.weekly.length === 0) state.tasks.weekly = DEFAULT.tasks.weekly;
+} else {
+  state = JSON.parse(JSON.stringify(DEFAULT));
+}
+
+// 图标同步逻辑
+function syncIcon() {
+  const icon = state.customIcon || DEFAULT_ICON;
+  document.getElementById('appIcon').href = icon;
+  document.querySelector('link[rel="apple-touch-icon"]').href = icon;
+  // 动态更新 manifest
+  const manifest = {
+    name: state.appName,
+    short_name: state.appName.substring(0,4),
+    start_url: ".",
+    display: "standalone",
+    background_color: "#f0f0f0",
+    theme_color: "#000000",
+    icons: [{ src: icon, sizes: "192x192", type: "image/png" }]
+  };
+  document.querySelector('link[rel="manifest"]').href = 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(manifest));
+}
+
+function uploadIcon(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    state.customIcon = ev.target.result;
+    save(); syncIcon();
+    alert('图标已更新！\n请到桌面删除旧图标，然后重新在浏览器菜单中点击“添加到主屏幕”，新图标才会生效哦。');
+  };
+  reader.readAsDataURL(file);
+}
+
+let activeTab = 'hero';
+let activeStudy = 'library';
+let currentNoteFolder = 'all';
+let selectedDate = new Date().toISOString().slice(0,10);
+let calViewDate = new Date();
+let timerInterval = null;
+let pieChartObj = null, accChartObj = null;
+let achOpen = false;
+let currentEditingNoteId = null;
+let autoSaveTimeout = null;
+let lastDateStr = new Date().toDateString();
+
+const $ = id => document.getElementById(id);
+function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+
+function applyTheme() {
+  document.body.className = state.theme === 'default' ? '' : 'theme-' + state.theme;
+  document.documentElement.style.setProperty('--accent', state.accent);
+  $('selTheme').value = state.theme;
+  $('inputAccent').value = state.accent;
+  // 更新顶部状态栏颜色
+  document.querySelector('meta[name="theme-color"]').content = state.theme === 'dark' || state.theme === 'neon' ? '#121212' : '#f0f0f0';
+}
+
+function updateAppTitle() {
+  $('appTitle').textContent = state.appName;
+  document.title = state.appName;
+  $('inputAppName').value = state.appName;
+}
+
+setInterval(() => {
+  const nowDateStr = new Date().toDateString();
+  if (nowDateStr !== lastDateStr) {
+    lastDateStr = nowDateStr;
+    renderHero(); renderList('daily'); renderList('weekly'); renderPet(); updateDateDisplay();
+  }
+}, 60000);
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.book-tab').forEach(t => t.classList.toggle('on', t.id === 'tab-' + tab));
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('on'));
+  $(`page-${tab}`).classList.add('on');
+  $('advBtn').classList.toggle('active', tab === 'adv');
+  $('studyBtn').classList.toggle('active', tab === 'study');
+  if(tab === 'adv') renderAdv();
+  if(tab === 'study') switchStudy(activeStudy);
+}
+window.goTab = (tab) => {
+  switchTab(tab);
+  document.querySelectorAll('.book-tab').forEach(t => t.classList.remove('on'));
+};
+
+function updateDateDisplay() {
+  const d = new Date();
+  const y = d.getFullYear(), m = d.getMonth() + 1, day = d.getDate();
+  const tiangan = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+  const dizhi = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+  const yearGZ = tiangan[(y - 4) % 10] + dizhi[(y - 4) % 12];
+  const monthGZ = tiangan[(y * 12 + m + 3) % 10] + dizhi[(m + 1) % 12];
+  const dayGZ = tiangan[(y + m * 2 + day) % 10] + dizhi[(y + m * 2 + day + 2) % 12];
+  $('dateDisplay').textContent = `${yearGZ}年 ${monthGZ}月 ${dayGZ}日`;
+}
+window.showAlmanac = () => { $('almDate').textContent = $('dateDisplay').textContent; openModal('modalAlmanac'); };
+
+function updateTimeDisplay() {
+  const h = new Date().getHours();
+  const zhi = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+  const idx = Math.floor((h + 1) / 2) % 12;
+  $('timeDisplay').textContent = `【 ${zhi[idx]}时 】`;
+}
+setInterval(updateTimeDisplay, 60000);
+
+function getCheckInStats() {
+  const dates = state.checkInDates.slice().sort();
+  const total = dates.length;
+  if (total === 0) return { current: 0, max: 0, total: 0, breaks: 0 };
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().slice(0, 10);
+
+  let current = 0;
+  let checkDate = new Date(todayStr);
+  if (!dates.includes(todayStr)) {
+    if (dates.includes(yesterdayStr)) checkDate = new Date(yesterdayStr);
+    else return { current: 0, max: calculateMax(dates), total, breaks: calculateBreaks(dates) };
+  }
+  
+  let currStr = checkDate.toISOString().slice(0, 10);
+  while (dates.includes(currStr)) {
+    current++;
+    checkDate.setDate(checkDate.getDate() - 1);
+    currStr = checkDate.toISOString().slice(0, 10);
+  }
+
+  return { current: current, max: calculateMax(dates), total: total, breaks: calculateBreaks(dates) };
+}
+function calculateMax(dates) {
+  let max = 0, cur = 0, prevDate = null;
+  for (let d of dates) {
+    if (!prevDate) cur = 1;
+    else {
+      const diff = (new Date(d) - new Date(prevDate)) / (1000 * 60 * 60 * 24);
+      if (diff === 1) cur++; else cur = 1;
+    }
+    max = Math.max(max, cur); prevDate = d;
+  }
+  return max;
+}
+function calculateBreaks(dates) {
+  if (dates.length <= 1) return 0;
+  let breaks = 0;
+  for (let i = 0; i < dates.length - 1; i++) {
+    const diff = (new Date(dates[i+1]) - new Date(dates[i])) / (1000 * 60 * 60 * 24);
+    if (diff > 1) breaks++;
+  }
+  return breaks;
+}
+window.showStats = () => {
+  const stats = getCheckInStats();
+  $('statCurrent').textContent = stats.current;
+  $('statMax').textContent = stats.max;
+  $('statTotal').textContent = stats.total;
+  $('statBreaks').textContent = stats.breaks;
+  openModal('modalStats');
+};
+
+function updateCheckInStatus() {
+  const todayStr = new Date().toISOString().slice(0,10);
+  const dailyList = state.tasks.daily;
+  const total = dailyList.length;
+  if (total === 0) return;
+  const cycleKey = todayStr;
+  const doneCount = dailyList.filter(t => t.lastDone === cycleKey).length;
+  const reachedTarget = (doneCount / total) >= 0.5;
+  const hasChecked = state.checkInDates.includes(todayStr);
+
+  if (reachedTarget && !hasChecked) {
+    state.checkInDates.push(todayStr); save(); $('streakNum').textContent = getCheckInStats().current;
+  } else if (!reachedTarget && hasChecked) {
+    state.checkInDates = state.checkInDates.filter(d => d !== todayStr); save(); $('streakNum').textContent = getCheckInStats().current;
+  }
+}
+
+function renderHero() {
+  const total = Object.values(state.attrExp).reduce((a,b)=>a+b, 0);
+  let lv = 1, cur = total, need = 100;
+  while (cur >= need) { cur -= need; lv++; need = 100 + (lv-1)*50; }
+  
+  $('heroName').textContent = state.hero.name;
+  $('heroLevel').textContent = `Lv.${lv} · ${lv > 10 ? '一代宗师' : lv > 5 ? '小有所成' : '初出茅庐'}`;
+  $('expFill').style.width = (cur / need * 100) + '%';
+  
+  const av = $('heroAvatar');
+  if (state.hero.avatar.startsWith('data:')) av.innerHTML = `<img src="${state.hero.avatar}">`;
+  else av.textContent = state.hero.avatar;
+
+  $('streakNum').textContent = getCheckInStats().current;
+
+  $('attrsContainer').innerHTML = Object.keys(ATTRS).map(k => {
+    let v = state.attrExp[k] || 0;
+    let isStone = (k === 'stone');
+    let percent = isStone ? Math.min(100, Math.abs(v) / 100 * 100) : (v % 100); 
+    let fillClass = isStone ? 'attr-fill attr-stone' : 'attr-fill';
+    let trackClass = isStone ? 'attr-track attr-stone' : 'attr-track';
+    let valText = isStone ? `${v > 0 ? '+' : ''}${v}` : '';
+    return `<div class="attr-row"><div class="attr-name">${ATTRS[k]}</div><div class="${trackClass}" style="position:relative"><div class="${fillClass}" style="width:${percent}%"></div>${isStone ? `<div style="position:absolute;top:0;left:6px;font-size:0.75em;line-height:16px;font-weight:bold;color:var(--text)">${valText}</div>` : ''}</div></div>`;
+  }).join('');
+  renderAch();
+}
+
+function getPetSVG(type, mood, size = "100%") {
+  let color = "#f39c12"; 
+  if (mood === 'angry') color = "#e74c3c";
+  else if (mood === 'sad') color = "#3498db";
+  else if (type === 'dog') color = "#d35400";
+  else if (type === 'dragon') color = "#27ae60";
+  else if (type === 'robot') color = "#95a5a6";
+  else if (type === 'slime') color = "#3498db";
+  else if (type === 'cat') color = "#f39c12";
+
+  let eyes = "", mouth = "", extra = "";
+  if (mood === 'happy') {
+    eyes = `<path d="M28 50 Q35 40 42 50" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"/><path d="M58 50 Q65 40 72 50" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"/>`;
+    mouth = `<path d="M35 60 Q50 80 65 60" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"/>`;
+    extra = `<text x="75" y="25" font-size="20">✨</text>`;
+  } else if (mood === 'angry') {
+    eyes = `<line x1="30" y1="45" x2="40" y2="55" stroke="#000" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="45" x2="30" y2="55" stroke="#000" stroke-width="3" stroke-linecap="round"/><line x1="60" y1="45" x2="70" y2="55" stroke="#000" stroke-width="3" stroke-linecap="round"/><line x1="70" y1="45" x2="60" y2="55" stroke="#000" stroke-width="3" stroke-linecap="round"/>`;
+    mouth = `<path d="M40 70 Q50 60 60 70" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"/>`;
+    extra = `<text x="75" y="25" font-size="20">💢</text>`;
+  } else if (mood === 'sad') {
+    eyes = `<path d="M30 55 Q35 45 40 55" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"/><path d="M60 55 Q65 45 70 55" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"/>`;
+    mouth = `<path d="M40 70 Q50 60 60 70" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"/>`;
+    extra = `<path d="M35 60 Q35 70 35 75" fill="none" stroke="#3498db" stroke-width="3" stroke-linecap="round"/><text x="75" y="25" font-size="20">💧</text>`;
+  } else {
+    eyes = `<circle cx="35" cy="50" r="4" fill="#000"/><circle cx="65" cy="50" r="4" fill="#000"/>`;
+    mouth = `<path d="M40 65 Q50 75 60 65" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round"/>`;
+  }
+  let baseShape = "";
+  if (type === 'cat') { baseShape = `<polygon points="20,45 25,10 45,30" fill="${color}"/><polygon points="80,45 75,10 55,30" fill="${color}"/><circle cx="50" cy="55" r="35" fill="${color}"/>`; }
+  else if (type === 'dog') { baseShape = `<ellipse cx="15" cy="55" rx="12" ry="25" fill="${color}"/><ellipse cx="85" cy="55" rx="12" ry="25" fill="${color}"/><circle cx="50" cy="55" r="32" fill="${color}"/>`; }
+  else if (type === 'dragon') { baseShape = `<polygon points="35,25 40,5 50,25" fill="${color}"/><polygon points="65,25 60,5 50,25" fill="${color}"/><ellipse cx="50" cy="55" rx="30" ry="35" fill="${color}"/><path d="M15 60 Q5 40 25 30 Z" fill="${color}"/><path d="M85 60 Q95 40 75 30 Z" fill="${color}"/>`; }
+  else if (type === 'robot') { baseShape = `<line x1="50" y1="10" x2="50" y2="30" stroke="${color}" stroke-width="6"/><circle cx="50" cy="10" r="8" fill="${color}"/><rect x="20" y="30" width="60" height="50" rx="8" fill="${color}"/>`; }
+  else if (type === 'slime') { baseShape = `<path d="M15 80 Q15 20 50 20 Q85 20 85 80 Q85 90 70 90 L30 90 Q15 90 15 80 Z" fill="${color}"/>`; }
+  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}">${baseShape}${eyes}${mouth}${extra}</svg>`;
+}
+
+function renderPet() {
+  const today = new Date().toISOString().slice(0,10);
+  if (state.pet.lastCare !== today) {
+    const days = Math.max(1, Math.round((new Date(today) - new Date(state.pet.lastCare)) / 86400000));
+    state.pet.hp = Math.max(0, state.pet.hp - days * 10);
+    state.pet.mood = Math.max(0, state.pet.mood - days * 15);
+    state.pet.lastCare = today; save();
+  }
+  const stats = getCheckInStats();
+  const isCheckedToday = state.checkInDates.includes(today);
+  let mood = 'normal'; let bubble = "今天也要努力哦！";
+  if (stats.current === 0 && !isCheckedToday) {
+    if (stats.total > 0) { mood = 'angry'; bubble = "你为什么昨天没有打卡？(生气)"; }
+    else { mood = 'sad'; bubble = "等待主人第一次打卡..."; }
+  } else if (isCheckedToday) {
+    if (stats.current >= 3) { mood = 'happy'; bubble = "太棒了！手感火热继续保持！"; }
+    else { mood = 'happy'; bubble = "今天打卡完成，我很开心！"; }
+  } else { mood = 'normal'; bubble = "今日打卡进度未到50%，加油！"; }
+  if (state.pet.hp < 30 || state.pet.mood < 30) { mood = 'sad'; bubble = "我快不行了，快喂喂我..."; }
+  $('petIconBox').innerHTML = getPetSVG(state.pet.type, mood);
+  $('petBubble').textContent = bubble;
+  $('petHpBar').style.width = state.pet.hp + '%';
+  $('petMoodBar').style.width = state.pet.mood + '%';
+}
+
+window.petAction = (action) => {
+  if (action === 'feed') { state.pet.hp = Math.min(100, state.pet.hp + 20); state.pet.mood = Math.min(100, state.pet.mood + 5); }
+  if (action === 'clean') { state.pet.hp = Math.min(100, state.pet.hp + 10); state.pet.mood = Math.min(100, state.pet.mood + 10); }
+  if (action === 'wash') { state.pet.hp = Math.min(100, state.pet.hp + 15); state.pet.mood = Math.min(100, state.pet.mood + 15); }
+  if (action === 'play') { state.pet.mood = Math.min(100, state.pet.mood + 25); state.pet.hp = Math.min(100, state.pet.hp + 5); }
+  state.pet.lastCare = new Date().toISOString().slice(0,10);
+  state.attrExp.hp += 2;
+  save(); renderPet(); renderHero();
+};
+
+window.openModal = id => {
+  if (id === 'modalPet') {
+    const types = [ { key: 'cat', name: '猫咪' }, { key: 'dog', name: '小狗' }, { key: 'dragon', name: '幼龙' }, { key: 'robot', name: '机器人' }, { key: 'slime', name: '史莱姆' } ];
+    $('petOptions').innerHTML = types.map(t => `<button class="pet-opt-btn ${state.pet.type === t.key ? 'active' : ''}" onclick="setPet('${t.key}')"><div class="pet-opt-svg">${getPetSVG(t.key, 'normal')}</div><span>${t.name}</span></button>`).join('');
+  }
+  $(id).classList.add('on');
+};
+window.closeModal = id => $(id).classList.remove('on');
+window.setPet = (type) => { state.pet.type = type; save(); renderPet(); closeModal('modalPet'); };
+
+window.toggleAch = () => {
+  achOpen = !achOpen; $('achList').style.display = achOpen ? 'block' : 'none'; $('achToggleIcon').textContent = achOpen ? '▲ 收起' : '▼ 展开';
+};
+function renderAch() {
+  const achs = Array(50).fill(0).map((_, i) => ({ name: `成就 ${i+1}`, desc: `待解锁`, ok: i < 5 }));
+  $('achList').innerHTML = achs.map(a => `<div class="ach-item ${a.ok?'':'locked'}"><div><b>${a.name}</b><div style="font-size:.8em;color:var(--sub)">${a.desc}</div></div><div style="font-size:1.2em">${a.ok?'🏆':'🔒'}</div></div>`).join('');
+}
+
+function guessAttr(name) {
+  if (/写|书|学|考|代码|阅读|复盘|看|纪录片|电影/.test(name)) return 'wis';
+  if (/跑|动|练|打扫|收拾|拉|洗|换/.test(name)) return 'str';
+  if (/账|钱|财|预算|储蓄|金币/.test(name)) return 'stone';
+  if (/水|睡|吃|饭|健康|早起|早睡|泡脚|远离|体魄/.test(name)) return 'hp';
+  return 'hp';
+}
+function guessExp(name) { return /写|书|代码|学/.test(name) ? 15 : 10; }
+
+function renderList(type) {
+  const box = $(type + 'List'); const arr = state.tasks[type];
+  const cycleKey = type === 'daily' ? new Date().toISOString().slice(0,10) : 'w-'+new Date().getDay();
+  const total = arr.length;
+  const doneCount = arr.filter(t => t.lastDone === cycleKey).length;
+  const bannerId = type === 'daily' ? 'dailyProgress' : 'weeklyProgress';
+  const banner = $(bannerId);
+  const percent = total > 0 ? Math.floor((doneCount / total) * 100) : 0;
+  if (type === 'daily') {
+    banner.textContent = `进度：${doneCount} / ${total} (${percent}%)`;
+    if (percent >= 50 && percent < 100) banner.textContent += ' 🎯 已达成打卡门槛!';
+  } else banner.textContent = `进度：${doneCount} / ${total}`;
+  if (doneCount === total && total > 0) { banner.textContent = '🎉 恭喜你完成所有任务！'; banner.classList.add('done'); } else banner.classList.remove('done');
+  box.innerHTML = arr.map(t => {
+    const done = t.lastDone === cycleKey;
+    return `<div class="list-item"><div class="ck-box ${done?'done':''}" onclick="toggleTask('${type}','${t.id}')"></div><div style="flex:1"><div style="${done?'text-decoration:line-through;opacity:.5':''}">${t.name}</div><div style="font-size:.75em;color:var(--sub)">${ATTRS[t.attr]} +${t.exp}</div></div><button class="li-del" onclick="delTask('${type}','${t.id}')">×</button></div>`;
+  }).join('') || '<div style="text-align:center;padding:20px;color:var(--sub)">EMPTY</div>';
+}
+
+window.toggleTask = (type, id) => {
+  const t = state.tasks[type].find(x => x.id === id);
+  const cycleKey = type === 'daily' ? new Date().toISOString().slice(0,10) : 'w-'+new Date().getDay();
+  if (t.lastDone === cycleKey) return;
+  t.lastDone = cycleKey; 
+  if (t.attr === 'stone') state.attrExp.stone = (state.attrExp.stone || 0) + t.exp;
+  else state.attrExp[t.attr] = (state.attrExp[t.attr] || 0) + t.exp;
+  if (type === 'daily') updateCheckInStatus();
+  save(); renderList(type); renderHero(); renderPet();
+};
+window.delTask = (type, id) => { if(confirm('删除?')){ state.tasks[type] = state.tasks[type].filter(x=>x.id!==id); save(); renderList(type); if(type==='daily') updateCheckInStatus(); } };
+window.addTask = (type) => {
+  const input = $(type + 'Input'); const name = input.value.trim(); if (!name) return;
+  state.tasks[type].push({ id: 't'+Date.now(), name, attr: guessAttr(name), exp: guessExp(name), lastDone: '' });
+  input.value = ''; save(); renderList(type); if(type==='daily') updateCheckInStatus();
+};
+
+function renderTemp() {
+  $('tempDateLabel').textContent = selectedDate === new Date().toISOString().slice(0,10) ? 'TODAY' : selectedDate;
+  const arr = state.tasks.temp.filter(t => t.dateKey === selectedDate);
+  $('tempList').innerHTML = arr.map(t => `<div class="list-item"><div class="ck-box ${t.done?'done':''}" onclick="toggleTemp('${t.id}')"></div><div style="flex:1"><div style="${t.done?'text-decoration:line-through;opacity:.5':''}">${t.name}</div></div><button class="li-cal" title="添加到系统日历" onclick="exportToCalendar('${t.id}')">📅</button><button class="li-del" onclick="delTemp('${t.id}')">×</button></div>`).join('') || '<div style="text-align:center;padding:20px;color:var(--sub)">EMPTY</div>';
+  renderCalendar();
+}
+
+window.exportToCalendar = (id) => {
+  const task = state.tasks.temp.find(t => t.id === id); if (!task) return;
+  const dateStr = task.dateKey.replace(/-/g, ''); 
+  let timeStr = '090000'; let endTimeStr = '100000';
+  if (task.time) {
+    timeStr = task.time.replace(':', '') + '00'; 
+    let h = parseInt(task.time.split(':')[0]); let m = parseInt(task.time.split(':')[1]);
+    h = (h + 1) % 24; endTimeStr = String(h).padStart(2, '0') + String(m).padStart(2, '0') + '00';
+  }
+  const dtStart = `${dateStr}T${timeStr}`; const dtEnd = `${dateStr}T${endTimeStr}`;
+  const dtStamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const title = task.name.replace(/[,;]/g, ' '); const loc = (task.loc || '').replace(/[,;]/g, ' ');
+  const icsLines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Villain RPG//CN','CALSCALE:GREGORIAN','BEGIN:VEVENT',`UID:${task.id}@villain.local`,`DTSTAMP:${dtStamp}`,`DTSTART:${dtStart}`,`DTEND:${dtEnd}`,`SUMMARY:${title}`,`LOCATION:${loc}`,'END:VEVENT','END:VCALENDAR'];
+  const blob = new Blob([icsLines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `${title}.ics`; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  alert('日历文件已生成！下载后点击打开，即可添加至系统日历。');
+};
+
+window.toggleTemp = id => { const t = state.tasks.temp.find(x=>x.id===id); if (t.done) return; t.done = true; state.attrExp[t.attr] = (state.attrExp[t.attr]||0) + t.exp; save(); renderTemp(); renderHero(); renderPet(); };
+window.delTemp = id => { state.tasks.temp = state.tasks.temp.filter(x=>x.id!==id); save(); renderTemp(); };
+window.saveTempTask = () => {
+  const name = $('tempName').value.trim(); if (!name) return;
+  state.tasks.temp.push({ id: 'tmp'+Date.now(), name, dateKey: selectedDate, time: $('tempTime').value, loc: $('tempLoc').value.trim(), attr: guessAttr(name), exp: 5, done: false });
+  $('tempName').value = ''; $('tempTime').value = ''; $('tempLoc').value = '';
+  save(); closeModal('modalTempAdd'); renderTemp();
+};
+
+function renderCalendar() {
+  const y = calViewDate.getFullYear(), m = calViewDate.getMonth();
+  $('monthLabel').textContent = `${y}/${m+1}`;
+  const firstDay = new Date(y, m, 1).getDay(); const days = new Date(y, m+1, 0).getDate();
+  let html = ['日','一','二','三','四','五','六'].map(d=>`<div style="font-size:.8em;color:var(--sub)">${d}</div>`).join('');
+  for(let i=0;i<firstDay;i++) html += '<div></div>';
+  for(let i=1;i<=days;i++){
+    const dStr = `${y}-${String(m+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+    const has = state.tasks.temp.some(t=>t.dateKey===dStr); const sel = dStr === selectedDate;
+    html += `<div style="padding:6px 0;border:1px solid ${sel?'var(--line)':'transparent'};cursor:pointer;position:relative;font-weight:${sel?'bold':'normal'}" onclick="selectDate('${dStr}')">${i} ${has?'<div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:4px;height:4px;background:var(--accent);"></div>':''}</div>`;
+  }
+  $('calGrid').innerHTML = html;
+}
+window.selectDate = d => { selectedDate = d; renderTemp(); };
+window.changeMonth = n => { calViewDate.setMonth(calViewDate.getMonth()+n); renderCalendar(); };
+
+function renderAdv() {
+  $('advBlocks').innerHTML = state.adv.projects.map(p=>`<div class="btn" style="text-align:center;padding:20px 0;" onclick="openTimer('${p.name}')">${p.name}</div>`).join('');
+  renderAdvChart();
+}
+window.addAdvProject = () => {
+  const n = $('newAdvProject').value.trim(); if(!n) return;
+  state.adv.projects.push({id:'p'+Date.now(), name:n}); $('newAdvProject').value=''; save(); renderAdv();
+};
+window.openTimer = name => {
+  if(state.adv.active) return alert('TIMER RUNNING');
+  $('timerTitle').textContent = name; $('timerDisplay').textContent = '00:00';
+  $('btnTimerStart').style.display = 'block'; $('btnTimerStop').style.display = 'none';
+  state.adv.active = { project: name, start: 0 };
+  openModal('modalTimer');
+};
+window.startTimer = () => {
+  state.adv.active.start = Date.now();
+  $('btnTimerStart').style.display = 'none'; $('btnTimerStop').style.display = 'block';
+  timerInterval = setInterval(()=>{
+    const diff = Math.floor((Date.now() - state.adv.active.start)/1000);
+    $('timerDisplay').textContent = `${String(Math.floor(diff/60)).padStart(2,'0')}:${String(diff%60).padStart(2,'0')}`;
+  }, 1000);
+};
+window.stopTimer = () => {
+  clearInterval(timerInterval);
+  const dur = Math.floor((Date.now() - state.adv.active.start)/1000);
+  if(dur > 10) { state.adv.history.push({ project: state.adv.active.project, duration: dur }); state.attrExp.wis += Math.floor(dur/60); }
+  state.adv.active = null; save(); closeModal('modalTimer'); renderHero(); renderAdv(); renderPet();
+};
+function renderAdvChart() {
+  const ctx = $('pieChart').getContext('2d');
+  const data = {}; state.adv.history.forEach(h => data[h.project] = (data[h.project]||0) + h.duration);
+  if(pieChartObj) pieChartObj.destroy(); if(!Object.keys(data).length) return;
+  pieChartObj = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(data), datasets: [{ data: Object.values(data), backgroundColor: [state.accent, '#333', '#888', '#ccc'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+}
+
+window.switchStudy = (tab, btn) => {
+  activeStudy = tab;
+  document.querySelectorAll('#page-study .btn.primary').forEach(b=>{ b.classList.remove('primary'); b.classList.add('btn'); });
+  if(btn) btn.classList.add('primary');
+  ['library','account','note'].forEach(t=>$(`study-${t}`).style.display = t===tab?'block':'none');
+  if(tab==='library') renderLibrary(); if(tab==='account') renderAccount(); if(tab==='note') renderNotes();
+};
+
+window.filterShelf = (type, el) => {
+  state.currentShelfFilter = type; document.querySelectorAll('.shelf-tab').forEach(t => t.classList.remove('on')); el.classList.add('on'); renderLibrary();
+};
+
+function renderLibrary() {
+  const filter = state.currentShelfFilter; const list = state.study.library.filter(item => filter === 'all' || item.type === filter);
+  $('shelfGrid').innerHTML = list.map(item => {
+    const p = item.total > 0 ? Math.min(100, (item.cur / item.total) * 100) : 0;
+    return `<div class="shelf-book" onclick="viewLibraryItem('${item.id}')"><div class="shelf-cover">${item.cover ? `<img src="${item.cover}">` : `<span style="font-size:2em;opacity:0.5;">📖</span>`}</div><div class="shelf-title">${item.name}</div>${item.total > 0 ? `<div style="font-size:0.7em;color:var(--sub)">${item.cur}/${item.total}</div><div class="shelf-progress"><div class="shelf-progress-fill" style="width:${p}%"></div></div>` : ''}</div>`;
+  }).join('') || '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--sub)">空空如也</div>';
+}
+
+window.uploadLibCover = (e) => {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader(); reader.onload = ev => { $('libCover').value = ev.target.result; }; reader.readAsDataURL(file);
+};
+window.saveLibrary = () => {
+  const name = $('libName').value.trim(); if(!name) return;
+  state.study.library.push({ id: 'lib'+Date.now(), type: $('libType').value, name: name, cover: $('libCover').value.trim(), cur: +$('libCur').value || 0, total: +$('libTotal').value || 0, review: $('libReview').value.trim() });
+  save(); renderLibrary(); closeModal('modalLibrary');
+  $('libName').value=''; $('libCover').value=''; $('libCur').value=''; $('libTotal').value=''; $('libReview').value='';
+};
+window.viewLibraryItem = (id) => {
+  const item = state.study.library.find(x => x.id === id); if(!item) return;
+  const action = prompt(`【${item.name}】\n观后感: ${item.review || '暂无'}\n\n输入 1 更新进度\n输入 2 删除该项目`, "");
+  if(action === '1') { const newCur = prompt("请输入当前进度数值:", item.cur); if(newCur !== null) { item.cur = +newCur; save(); renderLibrary(); } }
+  else if(action === '2') { if(confirm("确定删除吗？")) { state.study.library = state.study.library.filter(x => x.id !== id); save(); renderLibrary(); } }
+};
+
+window.toggleNoteLayout = () => {
+  const layouts = ['horizontal', 'vertical', 'list']; let idx = layouts.indexOf(state.noteLayout);
+  state.noteLayout = layouts[(idx + 1) % layouts.length]; save(); renderNotes();
+};
+
+function renderNotes() {
+  const bar = $('folderBar'); bar.className = `folder-bar ${state.noteLayout}`;
+  bar.innerHTML = `<div class="folder-btn ${currentNoteFolder === 'all' ? 'on' : ''}" onclick="switchNoteFolder('all')">全部</div>` + state.study.notes.folders.map(f => `<div class="folder-btn ${currentNoteFolder === f.id ? 'on' : ''}" onclick="switchNoteFolder('${f.id}')">📁 ${f.name}</div>`).join('') + `<div class="folder-btn" onclick="createFolder()" style="border-style:dashed;">+ 新建</div>`;
+  let filtered = state.study.notes.items;
+  if (currentNoteFolder !== 'all') { filtered = filtered.filter(n => n.folderId === currentNoteFolder); }
+  $('noteList').innerHTML = filtered.map(n => {
+    const folderName = state.study.notes.folders.find(f => f.id === n.folderId)?.name || '未分类';
+    return `<div class="note-item" onclick="openNoteEditor('${n.id}')"><div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span style="font-size:0.75em; color:var(--accent);">[${folderName}]</span><span class="note-date">${n.date}</span></div><div style="font-size:0.95em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${n.text || '空便签...'}</div></div>`;
+  }).join('') || '<div style="text-align:center;padding:20px;color:var(--sub)">这里空空如也</div>';
+}
+
+window.switchNoteFolder = (id) => { currentNoteFolder = id; renderNotes(); };
+window.createFolder = () => {
+  const name = prompt("输入新文件夹名称:");
+  if(name && name.trim()) { state.study.notes.folders.push({ id: 'f'+Date.now(), name: name.trim() }); save(); renderNotes(); }
+};
+
+window.openNoteEditor = (noteId = null) => {
+  currentEditingNoteId = noteId;
+  $('editorFolderSelect').innerHTML = state.study.notes.folders.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+  if (noteId) { const note = state.study.notes.items.find(n => n.id === noteId); $('editorText').value = note.text; $('editorFolderSelect').value = note.folderId; }
+  else { $('editorText').value = ''; if (currentNoteFolder !== 'all') { $('editorFolderSelect').value = currentNoteFolder; } }
+  $('saveStatus').textContent = '已保存'; $('noteEditor').classList.add('on'); setTimeout(() => $('editorText').focus(), 100);
+};
+window.closeNoteEditor = () => { saveNoteContent(); $('noteEditor').classList.remove('on'); renderNotes(); };
+$('editorText').addEventListener('input', () => { $('saveStatus').textContent = '正在保存...'; clearTimeout(autoSaveTimeout); autoSaveTimeout = setTimeout(saveNoteContent, 500); });
+$('editorFolderSelect').addEventListener('change', () => { $('saveStatus').textContent = '正在保存...'; clearTimeout(autoSaveTimeout); autoSaveTimeout = setTimeout(saveNoteContent, 500); });
+
+function saveNoteContent() {
+  const text = $('editorText').value; const folderId = $('editorFolderSelect').value;
+  if (currentEditingNoteId) { const note = state.study.notes.items.find(n => n.id === currentEditingNoteId); if (note) { note.text = text; note.folderId = folderId; } }
+  else { if (text.trim() !== '' || folderId) { const newNote = { id: 'n' + Date.now(), folderId: folderId || state.study.notes.folders[0]?.id || 'f1', text: text, date: new Date().toLocaleString('zh-CN', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'}) }; state.study.notes.items.unshift(newNote); currentEditingNoteId = newNote.id; } }
+  save(); $('saveStatus').textContent = '已自动保存';
+}
+
+function renderAccount() {
+  let total = 0;
+  $('accList').innerHTML = state.study.account.map(a=>{ total += a.type==='income' ? a.amount : -a.amount; return `<div class="list-item"><div style="flex:1"><b>${a.desc}</b></div><div style="color:${a.type==='income'?'var(--accent)':'var(--text)'}">${a.type==='income'?'+':'-'}${a.amount}</div></div>`; }).join('') || '<div style="text-align:center;padding:20px;color:var(--sub)">EMPTY</div>';
+  state.attrExp.stone = total; $('totalMoney').textContent = total.toFixed(2); renderAccountChart(); renderHero();
+}
+window.saveAcc = () => {
+  const amount = +$('accAmount').value; if(!amount) return;
+  state.study.account.push({ id:'a'+Date.now(), type:$('accType').value, amount, desc:$('accDesc').value.trim()||'未知', date: new Date().toISOString().slice(0,10) });
+  save(); renderAccount(); closeModal('modalAcc'); $('accAmount').value=''; $('accDesc').value='';
+};
+function renderAccountChart() {
+  const type = $('chartAccType').value; const ctx = $('accChart').getContext('2d');
+  let filtered = state.study.account.filter(a => a.type === 'expense');
+  if(type === 'day') filtered = filtered.filter(a => a.date === new Date().toISOString().slice(0,10));
+  if(type === 'month') filtered = filtered.filter(a => a.date.startsWith(new Date().toISOString().slice(0,7)));
+  const data = {}; filtered.forEach(a => data[a.desc] = (data[a.desc]||0) + a.amount);
+  if(accChartObj) accChartObj.destroy(); if(!Object.keys(data).length) return;
+  accChartObj = new Chart(ctx, { type: 'pie', data: { labels: Object.keys(data), datasets: [{ data: Object.values(data), backgroundColor: ['#c0392b','#d35400','#f39c12','#8e44ad'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+}
+
+window.changeAppName = (v) => { state.appName = v.trim() || '反派的自我修养'; save(); updateAppTitle(); };
+window.changeTheme = (v) => { state.theme = v; save(); applyTheme(); };
+window.changeAccent = (v) => { state.accent = v; save(); applyTheme(); };
+
+window.setAvatar = (emoji) => { state.hero.avatar = emoji; $('heroAvatar').textContent = emoji; };
+window.uploadAvatar = (e) => {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader(); reader.onload = ev => { state.hero.avatar = ev.target.result; renderHero(); }; reader.readAsDataURL(file);
+};
+window.saveFace = () => { state.hero.name = $('inputName').value || '反派'; save(); renderHero(); closeModal('modalFace'); };
+
+window.exportData = () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'villain-data-backup.json'; a.click();
+};
+window.importData = (e) => {
+  const f = e.target.files[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ev => { try { state = JSON.parse(ev.target.result); save(); location.reload(); } catch(err){ alert('导入失败'); } };
+  reader.readAsText(f);
+};
+window.clearData = () => { if(confirm('确定清空全部数据？')){ localStorage.removeItem(KEY); location.reload(); } };
+
+let recognition = null;
+window.toggleVoice = () => {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR) return alert('请使用 Chrome 或 Edge');
+  if(!recognition) {
+    recognition = new SR(); recognition.lang = 'zh-CN';
+    recognition.onresult = e => {
+      const txt = e.results[0][0].transcript.replace(/\s/g,'');
+      if(/支出|花费/.test(txt)) {
+        const amt = txt.match(/\d+/); 
+        if(amt) { state.study.account.push({ id:'a'+Date.now(), type:'expense', amount:+amt[0], desc:txt.replace(/支出|花费|\d+/g,'')||'语音记账', date: new Date().toISOString().slice(0,10) }); save(); renderAccount(); alert('已记录支出: '+amt[0]); }
+      } else if(/增加日常/.test(txt)) {
+        const name = txt.replace(/增加日常/g,''); state.tasks.daily.push({ id: 't'+Date.now(), name, attr: guessAttr(name), exp: guessExp(name), lastDone: '' }); save(); renderList('daily'); alert('已增加日常: '+name);
+      } else { alert('识别结果: ' + txt); }
+    };
+  }
+  recognition.start(); alert('请说话...');
+};
+
+applyTheme();
+updateAppTitle();
+syncIcon();
+updateDateDisplay();
+updateTimeDisplay();
+renderHero();
+renderPet();
+renderList('daily');
+renderList('weekly');
+renderTemp();
+renderAdv();
+renderLibrary();
+renderNotes();
+</script>
+</body>
+</html>
